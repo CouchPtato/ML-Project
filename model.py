@@ -6,50 +6,45 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.impute import SimpleImputer
 
-# 1. Load dataset
 print("📥 Loading dataset...")
 df = pd.read_csv("heart.csv")
 print("✅ Dataset loaded successfully!")
 print(f"📊 Dataset shape: {df.shape}")
 print(df.head())
 
-# 2. Encode binary columns
 label_encoder = LabelEncoder()
 df['Sex'] = label_encoder.fit_transform(df['Sex'])  # M -> 1, F -> 0
 df['ExerciseAngina'] = label_encoder.fit_transform(df['ExerciseAngina'])  # Y -> 1, N -> 0
 
-# 3. One-hot encode multi-class columns
+# One-hot encoding multi-class columns
 df = pd.get_dummies(df, columns=['ChestPainType', 'ST_Slope'], drop_first=True)
 
-# 4. Encode RestingECG (multi-class label encoding)
 df['RestingECG'] = label_encoder.fit_transform(df['RestingECG'])  # Normal->0, ST->1, LVH->2
 
-# 5. Split features and label
 X = df.drop("HeartDisease", axis=1)
 y = df["HeartDisease"]
 
-# 6. Train-test split
+# Train-test split
 print("\n🔀 Splitting data...")
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 print(f"🧪 Train size: {X_train.shape[0]} | 🧾 Test size: {X_test.shape[0]}")
 
-# 7. Impute missing values
+# Imputing missing values
 imputer = SimpleImputer(strategy='mean')
 X_train_imputed = imputer.fit_transform(X_train)
 X_test_imputed = imputer.transform(X_test)
 
-# 8. Feature scaling
+# Feature scaling
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train_imputed)
 X_test_scaled = scaler.transform(X_test_imputed)
 
-# 9. Train Random Forest model
 print("\n🎯 Training model...")
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train_scaled, y_train)
 print("✅ Model trained successfully!")
 
-# 10. Evaluate model
+# Checking Accuracy
 y_pred = model.predict(X_test_scaled)
 accuracy = accuracy_score(y_test, y_pred)
 print(f"🎯 Accuracy on test set: {accuracy * 100:.2f}%")
@@ -72,7 +67,6 @@ def predict_heart_disease(user_input_dict):
     prediction = model.predict(input_scaled)
     proba = model.predict_proba(input_scaled)[0][1] * 100  # probability of class 1
 
-    # Output
     if prediction[0] == 1:
         print(f"\n✅ Prediction: Person is likely to have heart disease. (Confidence: {proba:.2f}%)")
     else:
